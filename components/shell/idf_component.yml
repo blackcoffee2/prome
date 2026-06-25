@@ -1,0 +1,5 @@
+# Managed dependency for the shell. LittleFS backs the per-app storage service
+# behind the curated API. Pinned to the 1.22.x line, the current stable series.
+dependencies:
+  joltwallet/littlefs:
+    version: "^1.22.0"

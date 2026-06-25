@@ -1,0 +1,17 @@
+# Managed-component manifest for the project.
+#
+# We depend on LVGL directly from the ESP Component Registry and deliberately
+# do NOT pull in esp_lvgl_port. That helper would run LVGL on its own task and
+# take ownership of the timer loop; this firmware requires app_main to own the
+# tick and timer-handler loop for the device's entire uptime so the back action
+# can always preempt a running app. The port glue is therefore hand-written in
+# the bsp component instead.
+#
+# LVGL is pinned to the 9.4.x line: a stable, widely deployed v9 minor that
+# pairs cleanly with the targeted IDF release. The caret allows 9.4 patch
+# updates without jumping minors.
+dependencies:
+  idf:
+    version: ">=5.5.0"
+  lvgl/lvgl:
+    version: "^9.4.0"

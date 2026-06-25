@@ -1,0 +1,44 @@
+# ESP-IDF linker fragment: place and retain the app and capability registry
+# sections.
+#
+# REGISTER_APP and REGISTER_CAPABILITY emit descriptor pointers into the
+# app_registry and cap_registry sections (named with no leading dot to match
+# the [sections] entries below). The mapping applies, across every archive,
+# KEEP (so link-time GC cannot drop the otherwise-unreferenced pointers) and
+# SURROUND (so boundary symbols _app_registry_start/_end and
+# _cap_registry_start/_end are emitted -- exactly what the registry hosts walk).
+#
+# Alignment: SURROUND() emits the _start boundary symbol at the current output
+# location counter with no alignment of its own. When the preceding rodata
+# leaves that counter on an odd address, _start lands unaligned even though each
+# 4-byte descriptor pointer is individually aligned -- the entries get aligned
+# forward past the symbol, so _start points a few bytes before the first real
+# pointer. The host then reads each entry byte-shifted and recovers a garbage
+# descriptor address, faulting on the first field dereference. ALIGN(4) before
+# each section forces the location counter (and therefore the _start symbol) onto
+# a 4-byte boundary so the boundary symbols and the entry array agree, and the
+# count computed by subtracting them is exact.
+#
+# Grammar note: in a [scheme] entry, the left side of "->" is the NAME of a
+# [sections] fragment, not a raw section name. So each registry needs its own
+# named sections fragment whose name the scheme and mapping reference.
+
+[sections:app_registry]
+entries:
+    app_registry+
+
+[sections:cap_registry]
+entries:
+    cap_registry+
+
+[scheme:registry]
+entries:
+    app_registry -> flash_rodata
+    cap_registry -> flash_rodata
+
+[mapping:shell_registry]
+archive: *
+entries:
+    * (registry);
+        app_registry -> flash_rodata ALIGN(4) KEEP() SURROUND(app_registry),
+        cap_registry -> flash_rodata ALIGN(4) KEEP() SURROUND(cap_registry)

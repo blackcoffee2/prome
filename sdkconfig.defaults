@@ -1,0 +1,117 @@
+# Permanent project defaults. These are copied into sdkconfig on first build
+# and define the hardware floor and the LVGL configuration the firmware relies
+# on. Keeping CONFIG_LV_* symbols here (rather than only in menuconfig) makes
+# the LVGL build reproducible across checkouts.
+
+# --- Target ---
+CONFIG_IDF_TARGET="esp32s3"
+
+# --- Main task stack ---
+# LVGL renders on the main task: app_main owns the timer loop and calls
+# bsp_lvgl_timer_handler directly for the device's entire uptime, so every
+# lv_timer_handler render pass runs on this stack. The software renderer's draw
+# path -- gradient fills on the bands and tiles, plus the focused-tile shadow
+# glow -- is stack-hungry, and the IDF default main task stack overflows on the
+# first render pass (the launcher builds, then the first draw faults in
+# lv_draw_sw_mask_cleanup). Raising the stack well above the default gives the
+# draw path comfortable headroom while keeping the theme intact.
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=12288
+
+# --- Partition table ---
+# Custom CSV: dual app slots (ota_0/ota_1) plus otadata for OTA, and a
+# LittleFS storage partition that survives image updates.
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
+# --- OTA ---
+# App rollback lets a freshly booted image be confirmed before it is made
+# permanent; an image that fails its self-check is rolled back to the previous
+# slot on reset, so a bad update cannot brick the device. The single
+# CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE symbol covers this in current IDF
+# (the former CONFIG_APP_ROLLBACK_ENABLE was merged into it).
+CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
+
+# Signed-app verification is intentionally left OFF for development builds: it
+# requires a signing key and adds friction to every build, while giving nothing
+# until images are distributed over OTA to field devices. To ship signed
+# updates, generate a key with
+#   idf.py secure-generate-signing-key secure_boot_signing_key.pem
+# and re-enable these two symbols:
+#   CONFIG_SECURE_SIGNED_APPS_NO_SECURE_BOOT=y
+#   CONFIG_SECURE_SIGNED_ON_UPDATE_NO_SECURE_BOOT=y
+
+# --- Flash: 16 MB floor ---
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
+
+# --- PSRAM: 8 MB octal ---
+# Larger LVGL allocations and per-app working state live in PSRAM; DMA draw
+# buffers and task stacks stay in internal RAM (budgeted separately).
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+CONFIG_SPIRAM_USE_MALLOC=y
+
+# --- FreeRTOS ---
+# The shell runs cooperatively on a single LVGL task and uses very little of
+# the multitasking surface on purpose. A 1 ms tick gives LVGL fine-grained
+# timing for its animations and timers.
+CONFIG_FREERTOS_HZ=1000
+
+# --- LVGL ---
+# Color depth matches the 16-bit RGB565 SPI panel. The tick source is supplied
+# by our own port glue via lv_tick_inc from an esp_timer, NOT by an external
+# integration task. In LVGL 9.5 no Kconfig flag is needed for this; calling
+# lv_tick_inc is sufficient (the former LV_TICK_CUSTOM symbol was removed).
+CONFIG_LV_COLOR_DEPTH_16=y
+CONFIG_LV_USE_LOG=y
+CONFIG_LV_LOG_LEVEL_WARN=y
+
+# Fonts: size 14 carries the band text (title and clock); size 12 carries the
+# cell label beneath each launcher icon (THEME_FONT_CELL), kept smaller so the
+# name sits compactly under a larger icon; size 18 is the title font (screen
+# titles and the placeholder icon initial in theme.h); size 40 is the clock
+# app's large focus-timer readout face (CLOCK_FONT_READOUT in app_clock.c),
+# the largest Montserrat whose "00:00:00" still fits inside the timer ring.
+# Sizes 12, 18, and 40 are not on by default, so they must be explicitly enabled
+# or the build cannot resolve the font symbols the theme and the clock app
+# reference.
+CONFIG_LV_FONT_MONTSERRAT_12=y
+CONFIG_LV_FONT_MONTSERRAT_14=y
+CONFIG_LV_FONT_MONTSERRAT_18=y
+CONFIG_LV_FONT_MONTSERRAT_40=y
+
+# --- Logging ---
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+
+# --- Touch (XPT2046 resistive) ---
+# The KMRTM32032-SPI board carries an XPT2046 (HR2046) resistive touch
+# controller on the shared display SPI bus. The XPT2046 esp_lcd_touch driver
+# can convert raw 12-bit ADC readings to screen coordinates itself, but doing
+# so uses the driver's own fixed mapping and ignores the board's measured
+# calibration. Disabling that built-in conversion makes the driver hand raw
+# readings to the process_coordinates callback wired in bsp_touch_init
+# (touch_process_coordinates), which maps them to pixels using the
+# BSP_TOUCH_RAW_* calibration bounds in bsp_config.h. Leaving this symbol at
+# its default (enabled) would convert internally and never call the callback,
+# so the per-board calibration constants would have no effect.
+CONFIG_XPT2046_CONVERT_ADC_TO_COORDS=n
+
+# --- Camera (DVP) ---
+# The esp32-camera driver streams frames into PSRAM. PSRAM DMA mode lets the
+# capture path move frame data without burning internal RAM, which is reserved
+# for LVGL draw buffers and task stacks. Flash/PSRAM at 80 MHz is the driver's
+# recommended floor for stable capture.
+CONFIG_CAMERA_PSRAM_DMA=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+
+# --- Camera sensor drivers ---
+# The esp32-camera driver gates each sensor's register/probe code behind its
+# own Kconfig symbol, and only OV2640/OV3660/OV5640 are enabled by default.
+# The attached module is the OV7670 (the blue 18-pin board), whose driver is
+# OFF by default -- so without this the sensor probe reads the chip ID over
+# SCCB, finds no matching enabled driver, and fails with
+# "Detected camera not supported" / ESP_ERR_NOT_SUPPORTED, which is exactly
+# what cap_camera reports as "camera sensor not available". Enabling OV7670
+# support compiles its driver in so the probe matches.
+CONFIG_OV7670_SUPPORT=y

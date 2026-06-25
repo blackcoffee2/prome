@@ -1,0 +1,19 @@
+# Partition table — Phase 12 (dual app slots + OTA).
+#
+# OTA replaces the entire firmware image: the device writes a new image to the
+# inactive app slot, verifies it, switches the active pointer in otadata, and
+# reboots, with rollback if the new image fails to validate. That requires two
+# app partitions plus an otadata partition tracking which is active. This is a
+# deliberate flash-budget decision on the 16 MB floor: two 0x300000 app slots
+# plus storage fit with room to spare.
+#
+# The storage partition is unchanged from the interim single-slot layout, so
+# app data survives the rework.
+#
+# Name,     Type, SubType,  Offset,   Size
+nvs,        data, nvs,      0x9000,   0x6000
+otadata,    data, ota,      0xf000,   0x2000
+phy_init,   data, phy,      0x11000,  0x1000
+ota_0,      app,  ota_0,    0x20000,  0x300000
+ota_1,      app,  ota_1,    ,         0x300000
+storage,    data, littlefs, ,         0x400000

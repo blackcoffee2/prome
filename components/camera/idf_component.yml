@@ -1,0 +1,6 @@
+# Managed dependency for the camera subsystem. The esp32-camera driver
+# provides the DVP capture path and SCCB sensor control. Pinned to the 2.1.x
+# line, the current stable series compatible with the targeted IDF release.
+dependencies:
+  espressif/esp32-camera:
+    version: "^2.1.0"

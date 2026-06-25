@@ -1,0 +1,30 @@
+# ESP-IDF build output
+/build/
+sdkconfig
+sdkconfig.old
+
+# Managed components are fetched from the registry on build; the lock file
+# pins exact versions and is regenerated, so neither is committed.
+/managed_components/
+dependencies.lock
+
+# Secure Boot / OTA signing keys. NEVER commit these — the private key is what
+# field devices trust for updates; losing control of it compromises signing.
+*.pem
+secure_boot_signing_key.pem
+
+# Editor / IDE
+/.vscode/
+/.idea/
+*.swp
+*~
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Helper .txt copies of config/linker files made for previewing; the real
+# files are sdkconfig.defaults and components/shell/app_registry.ld.
+*.defaults.txt
+*.ld.txt
+.codetree/

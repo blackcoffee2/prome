@@ -1,0 +1,21 @@
+# Managed dependencies for the BSP. Three esp_lcd add-on drivers are pulled
+# from the registry:
+#   - the ILI9341 panel driver (the panel is the 4-wire SPI variant, driven
+#     over the ESP32-S3 SPI2 peripheral; the SPI master and esp_lcd SPI
+#     panel-IO APIs themselves live in the IDF's built-in driver/esp_lcd
+#     components and need no entry here);
+#   - the XPT2046 touch driver for the HR2046/XPT2046 resistive controller that
+#     shares the display's SPI bus. There is no official "espressif/" XPT2046
+#     driver in the registry; the maintained community component is
+#     "atanisoft/esp_lcd_touch_xpt2046", which exposes the
+#     ESP_LCD_TOUCH_IO_SPI_XPT2046_CONFIG macro and esp_lcd_touch_new_spi_xpt2046
+#     that bsp.c uses;
+#   - esp_lcd_touch, the shared touch base component the XPT2046 driver builds
+#     on, pinned to the minimum version that driver requires.
+dependencies:
+  espressif/esp_lcd_ili9341:
+    version: "^2.0.0"
+  espressif/esp_lcd_touch:
+    version: ">=1.0.4"
+  atanisoft/esp_lcd_touch_xpt2046:
+    version: "~1.0.0"
