@@ -14,7 +14,7 @@ hardware, those comments are the bring-up guide.
 
 ## Demo
 
-<video src="https://github.com/user-attachments/assets/6bdf9623-a4e4-4dc8-860b-7f4091c9c210" autoplay loop muted playsinline></video>
+<video src="https://github.com/user-attachments/assets/2e067517-f8c5-4262-9f81-82eb7db24ac0" autoplay loop muted playsinline></video>
 
 ## Hardware
 
