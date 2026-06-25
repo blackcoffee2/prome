@@ -1,5 +1,7 @@
 # PROME
 
+[![Support on Patreon](https://img.shields.io/badge/Patreon-Support-f96854?logo=patreon&logoColor=white)](https://www.patreon.com/c/UmarBinAyaz1)
+
 PROME ("Productivity and Media console") is open-source firmware for a small
 ESP32-S3 handheld console, built on [ESP-IDF](https://github.com/espressif/esp-idf)
 and [LVGL](https://lvgl.io/). It boots to a tile-grid home screen and
@@ -11,6 +13,10 @@ The codebase is organized around two load-bearing ideas, and the inline comments
 document the hardware bring-up lessons (display timing, color byte order, camera
 clocking, touch calibration) in detail. If you are porting PROME to different
 hardware, those comments are the bring-up guide.
+
+> **PROME is developed in my spare time and is free and open source.**
+> If it's useful to you, please consider [supporting the project on Patreon](https://www.patreon.com/c/UmarBinAyaz1)
+> — it directly funds the time and hardware that go into it.
 
 ## Demo
 
@@ -109,6 +115,15 @@ and implements the curated API, per-app-scoped storage on a LittleFS partition,
 a transport-agnostic OTA updater with automatic rollback, and the theme — a
 single header where every color, font, and geometry value is defined by role, so
 the whole device look changes from one place.
+
+## Support
+
+PROME is free and open source, developed in my spare time. If the project is
+useful to you, the best way to keep it going is to support it on Patreon:
+
+[![Support on Patreon](https://img.shields.io/badge/Patreon-Support-f96854?logo=patreon&logoColor=white)](https://www.patreon.com/c/UmarBinAyaz1)
+
+Every bit of support helps cover hardware, testing, and development time — thank you.
 
 ## License
 
