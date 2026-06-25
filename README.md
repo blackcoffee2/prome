@@ -14,6 +14,8 @@ hardware, those comments are the bring-up guide.
 
 ## Demo
 
+<video src="https://github.com/user-attachments/assets/6bdf9623-a4e4-4dc8-860b-7f4091c9c210" autoplay loop muted playsinline></video>
+
 ## Hardware
 
 PROME targets readily available, breadboard-friendly modules:
