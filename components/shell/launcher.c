@@ -254,17 +254,21 @@ lv_obj_t *launcher_build(void)
     lv_label_set_text(softkey_right, "Back");
     lv_obj_align(softkey_right, LV_ALIGN_RIGHT_MID, 0, 0);
 
-    /* The main pane fills the full space between the two bands. It is anchored
-     * to the top of that gap and sized to exactly the panel height minus both
-     * bands (240 - 2*28 = 184 px), full width, so no screen area is left unused
-     * above or below the grid. It is a flex-wrap container so icons flow
-     * left-to-right and wrap into rows, scrolling vertically when they exceed
-     * the visible area. Sized to four columns across 320 px: four 70 px cells
-     * plus three 6 px gaps span 298 px inside the 308 px usable width, and two
-     * 82 px rows fit in the 184 px of pane height. */
+    /* The main pane fills the space between the two bands. Its size is set in
+     * concrete pixels, not LV_PCT(100) - 2 * THEME_BAND_HEIGHT_PX: LV_PCT is an
+     * encoded value, so subtracting a pixel constant from it corrupts the
+     * encoding and resolves to nearly the full parent height, overflowing the
+     * bottom band. The panel size is read from LVGL's default display (so the
+     * launcher needs no BSP dependency to learn the screen size, as the app host
+     * does), giving a grid of the full panel width by the height minus both
+     * bands. It is a flex-wrap container: four 70 px cells plus three 6 px gaps
+     * span 298 px inside the 308 px usable width, so four columns fit per row. */
+    int32_t panel_w = lv_display_get_horizontal_resolution(lv_display_get_default());
+    int32_t panel_h = lv_display_get_vertical_resolution(lv_display_get_default());
+    int32_t grid_h = panel_h - 2 * THEME_BAND_HEIGHT_PX;
+
     lv_obj_t *grid = lv_obj_create(s_launcher_screen);
-    lv_obj_set_width(grid, LV_PCT(100));
-    lv_obj_set_height(grid, LV_PCT(100) - 2 * THEME_BAND_HEIGHT_PX);
+    lv_obj_set_size(grid, panel_w, grid_h);
     /* Anchor between the bands: offset down by exactly the top band's height so
      * the grid starts where the status pane ends and runs to where the softkey
      * pane begins, claiming the whole middle region. */
