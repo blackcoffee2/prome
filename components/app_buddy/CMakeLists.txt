@@ -13,6 +13,7 @@
 idf_component_register(
     SRCS "app_buddy.c"
          "panda_sprite.c"
+         "icon_buddy.c"
     INCLUDE_DIRS "."
     REQUIRES shell lvgl
     WHOLE_ARCHIVE

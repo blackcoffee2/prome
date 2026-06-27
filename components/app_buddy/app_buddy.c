@@ -51,6 +51,9 @@
 #include "esp_heap_caps.h"
 #include "esp_random.h"
 
+/* The launcher tile icon, compiled in from a build-time-converted image. */
+extern const lv_image_dsc_t icon_buddy_dsc;
+
 /* No compiled-in launcher icon: the descriptor sets .icon = NULL, so the
  * launcher renders the initial-on-tile placeholder ("B"). A real icon can be
  * added later via the build-time conversion pipeline, as the other apps do. */
@@ -435,7 +438,7 @@ static void buddy_app_cleanup(const app_api_t *api, void *ctx)
 
 static const app_descriptor_t buddy_app = {
     .name = "Buddy",
-    .icon = NULL,
+    .icon = &icon_buddy_dsc,
     .run = buddy_app_run,
     .cleanup = buddy_app_cleanup,
 };
